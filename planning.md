@@ -441,4 +441,10 @@ Scores must **vary meaningfully** — if all outputs cluster at 0.5, fix prompts
 - [x] ## Architecture — ASCII diagrams + narrative
 - [x] ## AI Tool Plan — M3, M4, M5 with sections, requests, verification
 
-**Next:** Milestone 3 — implement Flask skeleton + Signal 1. Do not start M4 until M3 verification passes.
+**Next:** Milestone 4 — Signal 2 + confidence fusion. ~~Milestone 3 — Flask + Signal 1 complete.~~
+
+### Milestone 3 ✅
+- [x] Flask app with `POST /submit` and `GET /log`
+- [x] Signal 1 (`classify_with_llm`) — Groq, returns `llm_score` float
+- [x] Structured JSONL audit log (`logs/audit.jsonl`)
+- [x] Response includes `content_id`, `attribution`, placeholder `confidence` + `label`
