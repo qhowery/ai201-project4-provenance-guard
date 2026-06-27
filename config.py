@@ -13,3 +13,8 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
 MIN_TEXT_LENGTH = 20
+
+# Rate limits for POST /submit — tuned for individual writers, not bulk scripts.
+# 10/min: normal drafting session (multiple revisions) without abuse.
+# 100/day: generous daily cap for a single creator account.
+SUBMIT_RATE_LIMIT = "10 per minute;100 per day"
