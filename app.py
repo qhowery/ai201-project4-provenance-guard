@@ -5,16 +5,16 @@ from flask import Flask, jsonify, request
 import config
 from audit import append_audit_entry, get_log, save_submission, utc_now_iso
 from exceptions import ScoringError
-from signals.llm_classifier import (
-    attribution_from_signal1,
-    classify_with_llm,
-    signal1_log_tag,
+from scoring import (
+    build_attribution,
+    compute_confidence,
+    map_to_external_label,
+    map_to_internal_label,
 )
+from signals.llm_classifier import classify_with_llm
+from signals.stylometrics import score_stylometrics
 
 app = Flask(__name__)
-
-# Milestone 3 placeholders until Signal 2 + fusion land in Milestone 4
-PLACEHOLDER_LABEL = "uncertain"
 
 
 @app.post("/submit")
@@ -33,19 +33,27 @@ def submit():
     except ScoringError as exc:
         return jsonify({"error": str(exc)}), 422
 
-    content_id = str(uuid.uuid4())
-    attribution = attribution_from_signal1(llm_score)
-    confidence = llm_score  # placeholder — Milestone 4 replaces with fused final_score
+    stylo_score = score_stylometrics(text)
+    confidence_result = compute_confidence(llm_score, stylo_score)
+    final_score = confidence_result["final_score"]
+    internal_label = map_to_internal_label(final_score)
+    external_label = map_to_external_label(internal_label)
+    attribution = build_attribution(external_label, final_score)
 
+    content_id = str(uuid.uuid4())
     record = {
         "content_id": content_id,
         "creator_id": creator_id,
         "text": text,
         "timestamp": utc_now_iso(),
-        "attribution": signal1_log_tag(llm_score),
-        "confidence": confidence,
         "llm_score": llm_score,
-        "label": PLACEHOLDER_LABEL,
+        "stylo_score": stylo_score,
+        "confidence": final_score,
+        "divergence": confidence_result["divergence"],
+        "forced_uncertain": confidence_result["forced_uncertain"],
+        "internal_label": internal_label,
+        "label": external_label,
+        "attribution": attribution,
         "status": "classified",
     }
 
@@ -56,8 +64,8 @@ def submit():
         {
             "content_id": content_id,
             "attribution": attribution,
-            "confidence": confidence,
-            "label": PLACEHOLDER_LABEL,
+            "confidence": final_score,
+            "label": external_label,
         }
     )
 

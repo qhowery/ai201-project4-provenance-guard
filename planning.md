@@ -441,10 +441,11 @@ Scores must **vary meaningfully** — if all outputs cluster at 0.5, fix prompts
 - [x] ## Architecture — ASCII diagrams + narrative
 - [x] ## AI Tool Plan — M3, M4, M5 with sections, requests, verification
 
-**Next:** Milestone 4 — Signal 2 + confidence fusion. ~~Milestone 3 — Flask + Signal 1 complete.~~
+**Next:** Milestone 5 — appeals endpoint + production polish.
 
-### Milestone 3 ✅
-- [x] Flask app with `POST /submit` and `GET /log`
-- [x] Signal 1 (`classify_with_llm`) — Groq, returns `llm_score` float
-- [x] Structured JSONL audit log (`logs/audit.jsonl`)
-- [x] Response includes `content_id`, `attribution`, placeholder `confidence` + `label`
+### Milestone 4 ✅
+- [x] `score_stylometrics()` — burstiness + punctuation entropy
+- [x] `compute_confidence()` — 60/40 fusion + divergence override at 0.40
+- [x] Label mapping to 3 external categories
+- [x] Audit log records `llm_score`, `stylo_score`, `confidence`, `divergence`, `internal_label`
+- [x] `test_milestone4.py` — 4 deliberate test inputs
