@@ -48,7 +48,12 @@ def submit():
     stylo_score = score_stylometrics(text)
     confidence_result = compute_confidence(llm_score, stylo_score)
     final_score = confidence_result["final_score"]
-    internal_label = map_to_internal_label(final_score)
+    internal_label = map_to_internal_label(
+        final_score,
+        llm_score=llm_score,
+        stylo_score=stylo_score,
+        forced_uncertain=confidence_result["forced_uncertain"],
+    )
     external_label = map_to_external_label(internal_label)
     attribution = build_attribution(external_label, final_score)
 
@@ -80,6 +85,8 @@ def submit():
             "attribution": attribution,
             "confidence": final_score,
             "label": external_label,
+            "llm_score": llm_score,
+            "stylo_score": stylo_score,
         }
     )
 

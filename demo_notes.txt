@@ -1,74 +1,88 @@
 Demo Notes — Provenance Guard (AI201 Project 4)
 ~2 minutes · portfolio walkthrough
 
+WHERE THE EXAMPLES COME FROM
+Both demo texts are copied from test_milestone4.py → TEST_CASES (the same
+fixtures used in Milestone 4/5 automated tests):
+  • clearly_human  → casual ramen review
+  • clearly_ai     → AI boilerplate paragraph (Part 2; divergence demo)
+
 ────────────────────────────────────────
 BEFORE RECORDING
 ────────────────────────────────────────
-1. Terminal 1: cd ai201-project4-provenance-guard && ./run.sh
-   (or: .venv/bin/python app.py — NOT plain python app.py)
-2. Terminal 2: ready for curl commands
-3. Have .env with GROQ_API_KEY set
-4. QuickTime → New Screen Recording (or Zoom record)
+Terminal 1 (leave running):
+  cd ai201-project4-provenance-guard
+  ./run.sh
+  → must show: Running on http://127.0.0.1:5000
+
+Terminal 2 (curl commands):
+  cd ai201-project4-provenance-guard
+  → use 127.0.0.1 NOT localhost (macOS AirPlay uses port 5000)
+  → use python3 -m json.tool (with spaces: python3 -m, curl -s -X)
+
+Have .env with a valid GROQ_API_KEY.
 
 ────────────────────────────────────────
 INTRO (~15 sec)
 ────────────────────────────────────────
+
 Say:
 "Hi, I'm Quonlee Howery. This is Provenance Guard, my AI201 Project 4.
 
 It's a backend service that classifies whether submitted text is likely AI-generated or human-written, shows a transparency label, logs every decision, and lets creators appeal misclassifications."
 
-Show: README open in browser or editor — Architecture section.
+Show: README — Architecture section.
 
 ────────────────────────────────────────
 PART 1 — Submit human text (~30 sec)
 ────────────────────────────────────────
-Run (casual human example):
-curl -s -X POST http://localhost:5000/submit \
+Run:
+curl -s -X POST http://127.0.0.1:5000/submit \
   -H "Content-Type: application/json" \
-  -d '{"text": "ok so i finally tried that new ramen place downtown and honestly? underwhelming. the broth was fine but they put WAY too much sodium in it and i was thirsty for like three hours after. my friend got the spicy version and said it was better.", "creator_id": "demo-user"}' | python -m json.tool
+  -d '{"text": "ok so i finally tried that new ramen place downtown and honestly? underwhelming. the broth was fine but they put WAY too much sodium in it and i was thirsty for like three hours after. my friend got the spicy version and said it was better.", "creator_id": "demo-user"}' | python3 -m json.tool
 
 Say:
 "Two signals run on every submission — an LLM classifier and stylometric heuristics. They fuse into a confidence score and one of three labels.
 
-This casual review is clearly human-leaning — both llm_score and stylo_score are low, and they agree. Informal tone, irregular sentences. The label may show as uncertain rather than high-confidence human, because our human band only kicks in below 0.18 on the fused score. That's intentional conservatism: we'd rather hedge than over-flag casual writing."
+This casual review is high-confidence human. Both llm_score and stylo_score are low and agree — informal tone, irregular sentences. When both signals are below 0.30, we label human even if the fused score isn't tiny."
 
-Point at: llm_score, stylo_score, and confidence in JSON response (not just label).
-SAVE the content_id somewhere in case you need it — optional for appeal demo.
+Point at: label, llm_score, stylo_score, confidence in JSON.
 
 ────────────────────────────────────────
 PART 2 — Submit AI-ish text (~25 sec)
 ────────────────────────────────────────
 Run:
-curl -s -X POST http://localhost:5000/submit \
+curl -s -X POST http://127.0.0.1:5000/submit \
   -H "Content-Type: application/json" \
-  -d '{"text": "Artificial intelligence represents a transformative paradigm shift in modern society. It is important to note that while the benefits of AI are numerous, it is equally essential to consider the ethical implications. Furthermore, stakeholders across various sectors must collaborate to ensure responsible deployment.", "creator_id": "demo-user"}' | python -m json.tool
+  -d '{"text": "Artificial intelligence represents a transformative paradigm shift in modern society. It is important to note that while the benefits of AI are numerous, it is equally essential to consider the ethical implications. Furthermore, stakeholders across various sectors must collaborate to ensure responsible deployment.", "creator_id": "demo-user"}' | python3 -m json.tool
 
 Say:
-"This AI boilerplate is interesting — the LLM flags it strongly, but stylometrics sees mixed sentence lengths. The signals disagree, so divergence logic forces uncertain instead of a false high-confidence AI flag. That was a deliberate design choice."
+"This AI boilerplate from our test fixtures is the interesting case — the LLM flags it strongly, but stylometrics sees mixed sentence lengths. The signals disagree, so divergence logic forces uncertain instead of a false high-confidence AI flag."
 
-Point at: confidence around 0.5, label uncertain.
+Point at: label uncertain, confidence around 0.5.
+SAVE content_id from this response for Part 4 (appeal).
 
 ────────────────────────────────────────
 PART 3 — Audit log (~20 sec)
 ────────────────────────────────────────
 Run:
-curl -s http://localhost:5000/log | python -m json.tool
+curl -s http://127.0.0.1:5000/log | python3 -m json.tool
 
 Say:
 "Every submission is logged with both signal scores, the fused confidence, and the label. This is the audit trail a platform would use for compliance and appeals review."
 
-Scroll to show llm_score, stylo_score, confidence fields.
+Scroll to show llm_score, stylo_score, confidence on a classification entry.
 
 ────────────────────────────────────────
 PART 4 — Appeal (~20 sec)
 ────────────────────────────────────────
-Run (paste content_id from Part 2 AI submission):
-curl -s -X POST http://localhost:5000/appeal \
+Run (paste content_id from Part 2):
+curl -s -X POST http://127.0.0.1:5000/appeal \
   -H "Content-Type: application/json" \
-  -d '{"content_id": "PASTE-CONTENT-ID", "creator_id": "demo-user", "creator_reasoning": "I wrote this myself from personal experience. I am a non-native English speaker and my writing style may appear more formal than typical."}' | python -m json.tool
+  -d '{"content_id": "PASTE-CONTENT-ID", "creator_id": "demo-user", "creator_reasoning": "I wrote this myself from personal experience. I am a non-native English speaker and my writing style may appear more formal than typical."}' | python3 -m json.tool
 
-Then re-run GET /log — show status under_review and appeal_reasoning.
+Then:
+curl -s http://127.0.0.1:5000/log | python3 -m json.tool
 
 Say:
 "Creators can appeal. Status moves to under review, reasoning is logged alongside the original scores. No automated re-classification — a human reviewer would decide."
@@ -77,24 +91,21 @@ Say:
 PART 5 — Rate limit mention (~10 sec)
 ────────────────────────────────────────
 Say:
-"Submit is rate limited to 10 per minute — I verified 429 responses after the 10th request. Details and evidence are in the README."
-
-Optional: show README rate limit section instead of live demo.
+"Submit is rate limited to 10 per minute — I verified 429 responses after the 10th request. Details are in the README."
 
 ────────────────────────────────────────
 CLOSE (~10 sec)
 ────────────────────────────────────────
 Say:
-"Key design decisions: two complementary signals, divergence override to avoid over-flagging, three transparency labels not a binary, and appeals as the safety valve. Known limitation: repetitive poetry can fool stylometrics — documented in README.
+"Key design decisions: two complementary signals, divergence override to avoid over-flagging, human agreement when both signals are low, three transparency labels not a binary, and appeals as the safety valve.
 
 Thanks for watching."
 
-Show: README Known limitations section briefly.
+Show: README Known limitations briefly.
 
 ────────────────────────────────────────
 RECORDING TIPS
 ────────────────────────────────────────
-- 2 minutes is enough — don't run training or long waits
-- Speak slowly; showing curl output is fine
-- Upload to YouTube (unlisted) or Google Drive
-- Paste link in README where it says Demo video link
+- Server must be running in Terminal 1 before any curl
+- Always 127.0.0.1:5000 and python3 -m json.tool
+- 2 minutes is enough — saved results in README match these curls

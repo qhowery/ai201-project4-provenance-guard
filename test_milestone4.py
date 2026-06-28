@@ -66,7 +66,12 @@ def run_fusion(use_live_llm: bool = False) -> None:
         llm_score = llm_fn(text) if llm_fn else MOCK_LLM_SCORES[name]
         stylo_score = score_stylometrics(text)
         result = compute_confidence(llm_score, stylo_score)
-        internal = map_to_internal_label(result["final_score"])
+        internal = map_to_internal_label(
+            result["final_score"],
+            llm_score=llm_score,
+            stylo_score=stylo_score,
+            forced_uncertain=result["forced_uncertain"],
+        )
         external = map_to_external_label(internal)
         forced = " *forced*" if result["forced_uncertain"] else ""
         print(
@@ -77,7 +82,23 @@ def run_fusion(use_live_llm: bool = False) -> None:
         print(f"{'':28} → {build_attribution(external, result['final_score'])}")
 
 
+def test_human_agreement_rule() -> None:
+    """Both signals low and aligned → high-confidence human."""
+    llm, stylo = 0.23, 0.22
+    result = compute_confidence(llm, stylo)
+    internal = map_to_internal_label(
+        result["final_score"],
+        llm_score=llm,
+        stylo_score=stylo,
+        forced_uncertain=result["forced_uncertain"],
+    )
+    external = map_to_external_label(internal)
+    assert external == "high-confidence human", f"got {external} for fused {result['final_score']}"
+    print("  human agreement rule OK\n")
+
+
 if __name__ == "__main__":
+    test_human_agreement_rule()
     run_stylometrics_only()
 
     try:

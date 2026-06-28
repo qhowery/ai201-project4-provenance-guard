@@ -157,6 +157,8 @@ The number is shown to users as a **percent distance from neutral** in the attri
 
 **Divergence override:** When `|llm − stylo| > 0.40`, `final_score` is forced to **0.50** regardless of weighted average → always lands in **`uncertain`**.
 
+**Human agreement rule:** When divergence override did **not** fire and **both** `llm_score < 0.30` and `stylo_score < 0.30`, label **`high-confidence human`** even if the weighted average is between 0.18 and 0.35. Casual human writing often lands in that band; both signals agreeing low is stronger evidence than the fused score alone.
+
 ---
 
 ## 3. Transparency label design
@@ -170,7 +172,7 @@ Three external labels only. Exact attribution strings ( `{pct}` = `round(final_s
 - **Example:** `"This content was assessed as AI-generated (87% confidence)."`
 
 ### Variant B — high-confidence human
-- **When:** internal `clearly_human` (final_score < 0.18)
+- **When:** internal `clearly_human` (`final_score < 0.18`, **or** both signals `< 0.30` with no divergence override)
 - **Label field:** `"high-confidence human"`
 - **Attribution:** `"This content was assessed as human-written ({pct}% confidence)."`
 - **Example:** `"This content was assessed as human-written (11% confidence)."`  

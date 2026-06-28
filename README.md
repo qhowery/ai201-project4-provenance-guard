@@ -72,9 +72,11 @@ Combined: `stylo_score = 0.55 × burst_ai + 0.45 × punct_ai`
 
 Confidence is an **AI-likelihood score**, not "probability we're correct." A score of 0.60 means the text leans AI-ward on our scale, not that we're 60% sure.
 
-### Example submissions (from Milestone 4/5 testing)
+### Example submissions (from `test_milestone4.py` → `TEST_CASES`)
 
-#### Human-leaning — casual review (`confidence: ~0.22`, label may be `uncertain`)
+These are the **same texts** used in automated Milestone 4/5 tests — not ad-hoc copy.
+
+#### High-confidence human — casual review (`confidence: ~0.22`)
 
 **Text:** *"ok so i finally tried that new ramen place downtown and honestly? underwhelming. the broth was fine but they put WAY too much sodium in it..."*
 
@@ -85,10 +87,10 @@ Confidence is an **AI-likelihood score**, not "probability we're correct." A sco
 | `divergence` | ~0.01 |
 | **`final_score`** | **~0.22** |
 
-**Label:** `uncertain` *(both signals agree it's human — scores are low — but `final_score` sits in the borderline-human band ≥ 0.18, so the external label hedges rather than claiming high confidence)*  
-**Attribution:** *"This content could not be confidently attributed (22% confidence). Attribution is uncertain."*
+**Label:** `high-confidence human`  
+**Attribution:** *"This content was assessed as human-written (22% confidence)."*
 
-Both signals agree: informal tone, irregular sentence lengths, casual punctuation. Low scores across the board. LLM scores may vary slightly run to run; only fused scores **below 0.18** receive `high-confidence human`.
+Both signals agree: informal tone, irregular sentence lengths, casual punctuation. **Human agreement rule:** when both signals are below 0.30 and divergence is low, label high-confidence human even though the fused score is above 0.18.
 
 ---
 
@@ -123,10 +125,10 @@ Three variants. The **`label`** field is the short badge; **`attribution`** is t
 - **Example:** `This content was assessed as AI-generated (88% confidence).`
 
 ### Variant 2 — high-confidence human
-- **When:** `final_score < 0.18`
+- **When:** `final_score < 0.18`, **or** both `llm_score` and `stylo_score` `< 0.30` (with no divergence override)
 - **Label:** `high-confidence human`
 - **Exact text:** `This content was assessed as human-written ({pct}% confidence).`
-- **Example:** `This content was assessed as human-written (19% confidence).`
+- **Example:** `This content was assessed as human-written (22% confidence).`
 
 ### Variant 3 — uncertain
 - **When:** scores in the middle band, or divergence override fired

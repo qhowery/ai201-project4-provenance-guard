@@ -1,6 +1,9 @@
 LLM_WEIGHT = 0.60
 STYLO_WEIGHT = 0.40
 DIVERGENCE_THRESHOLD = 0.40
+# When both signals agree the text is human, label high-confidence human even if
+# the weighted average sits slightly above the clearly_human tier cutoff.
+HUMAN_AGREEMENT_THRESHOLD = 0.30
 
 
 def compute_confidence(llm_score: float, stylo_score: float) -> dict:
@@ -24,7 +27,22 @@ def compute_confidence(llm_score: float, stylo_score: float) -> dict:
     }
 
 
-def map_to_internal_label(final_score: float) -> str:
+def map_to_internal_label(
+    final_score: float,
+    *,
+    llm_score: float | None = None,
+    stylo_score: float | None = None,
+    forced_uncertain: bool = False,
+) -> str:
+    if (
+        not forced_uncertain
+        and llm_score is not None
+        and stylo_score is not None
+        and llm_score < HUMAN_AGREEMENT_THRESHOLD
+        and stylo_score < HUMAN_AGREEMENT_THRESHOLD
+    ):
+        return "clearly_human"
+
     if final_score >= 0.82:
         return "clearly_ai"
     if final_score >= 0.65:
