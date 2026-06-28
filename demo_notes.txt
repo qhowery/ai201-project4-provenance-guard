@@ -1,0 +1,100 @@
+Demo Notes — Provenance Guard (AI201 Project 4)
+~2 minutes · portfolio walkthrough
+
+────────────────────────────────────────
+BEFORE RECORDING
+────────────────────────────────────────
+1. Terminal 1: cd ai201-project4-provenance-guard && ./run.sh
+   (or: .venv/bin/python app.py — NOT plain python app.py)
+2. Terminal 2: ready for curl commands
+3. Have .env with GROQ_API_KEY set
+4. QuickTime → New Screen Recording (or Zoom record)
+
+────────────────────────────────────────
+INTRO (~15 sec)
+────────────────────────────────────────
+Say:
+"Hi, I'm Quonlee Howery. This is Provenance Guard, my AI201 Project 4.
+
+It's a backend service that classifies whether submitted text is likely AI-generated or human-written, shows a transparency label, logs every decision, and lets creators appeal misclassifications."
+
+Show: README open in browser or editor — Architecture section.
+
+────────────────────────────────────────
+PART 1 — Submit human text (~30 sec)
+────────────────────────────────────────
+Run (casual human example):
+curl -s -X POST http://localhost:5000/submit \
+  -H "Content-Type: application/json" \
+  -d '{"text": "ok so i finally tried that new ramen place downtown and honestly? underwhelming. the broth was fine but they put WAY too much sodium in it and i was thirsty for like three hours after. my friend got the spicy version and said it was better.", "creator_id": "demo-user"}' | python -m json.tool
+
+Say:
+"Two signals run on every submission — an LLM classifier and stylometric heuristics. They fuse into a confidence score and one of three labels.
+
+This casual review is clearly human-leaning — both llm_score and stylo_score are low, and they agree. Informal tone, irregular sentences. The label may show as uncertain rather than high-confidence human, because our human band only kicks in below 0.18 on the fused score. That's intentional conservatism: we'd rather hedge than over-flag casual writing."
+
+Point at: llm_score, stylo_score, and confidence in JSON response (not just label).
+SAVE the content_id somewhere in case you need it — optional for appeal demo.
+
+────────────────────────────────────────
+PART 2 — Submit AI-ish text (~25 sec)
+────────────────────────────────────────
+Run:
+curl -s -X POST http://localhost:5000/submit \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Artificial intelligence represents a transformative paradigm shift in modern society. It is important to note that while the benefits of AI are numerous, it is equally essential to consider the ethical implications. Furthermore, stakeholders across various sectors must collaborate to ensure responsible deployment.", "creator_id": "demo-user"}' | python -m json.tool
+
+Say:
+"This AI boilerplate is interesting — the LLM flags it strongly, but stylometrics sees mixed sentence lengths. The signals disagree, so divergence logic forces uncertain instead of a false high-confidence AI flag. That was a deliberate design choice."
+
+Point at: confidence around 0.5, label uncertain.
+
+────────────────────────────────────────
+PART 3 — Audit log (~20 sec)
+────────────────────────────────────────
+Run:
+curl -s http://localhost:5000/log | python -m json.tool
+
+Say:
+"Every submission is logged with both signal scores, the fused confidence, and the label. This is the audit trail a platform would use for compliance and appeals review."
+
+Scroll to show llm_score, stylo_score, confidence fields.
+
+────────────────────────────────────────
+PART 4 — Appeal (~20 sec)
+────────────────────────────────────────
+Run (paste content_id from Part 2 AI submission):
+curl -s -X POST http://localhost:5000/appeal \
+  -H "Content-Type: application/json" \
+  -d '{"content_id": "PASTE-CONTENT-ID", "creator_id": "demo-user", "creator_reasoning": "I wrote this myself from personal experience. I am a non-native English speaker and my writing style may appear more formal than typical."}' | python -m json.tool
+
+Then re-run GET /log — show status under_review and appeal_reasoning.
+
+Say:
+"Creators can appeal. Status moves to under review, reasoning is logged alongside the original scores. No automated re-classification — a human reviewer would decide."
+
+────────────────────────────────────────
+PART 5 — Rate limit mention (~10 sec)
+────────────────────────────────────────
+Say:
+"Submit is rate limited to 10 per minute — I verified 429 responses after the 10th request. Details and evidence are in the README."
+
+Optional: show README rate limit section instead of live demo.
+
+────────────────────────────────────────
+CLOSE (~10 sec)
+────────────────────────────────────────
+Say:
+"Key design decisions: two complementary signals, divergence override to avoid over-flagging, three transparency labels not a binary, and appeals as the safety valve. Known limitation: repetitive poetry can fool stylometrics — documented in README.
+
+Thanks for watching."
+
+Show: README Known limitations section briefly.
+
+────────────────────────────────────────
+RECORDING TIPS
+────────────────────────────────────────
+- 2 minutes is enough — don't run training or long waits
+- Speak slowly; showing curl output is fine
+- Upload to YouTube (unlisted) or Google Drive
+- Paste link in README where it says Demo video link

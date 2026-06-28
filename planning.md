@@ -449,3 +449,10 @@ Scores must **vary meaningfully** — if all outputs cluster at 0.5, fix prompts
 - [x] Flask-Limiter on `/submit` — `10 per minute; 100 per day`
 - [x] Complete audit log — both signal scores, confidence, appeal status
 - [x] `test_milestone5.py` — labels, appeals, rate limit (429 after 10)
+
+**Next:** Record demo video and add link to README.
+
+### Milestone 6 ✅
+- [x] README — architecture, signals, scoring examples, labels, limitations, spec reflection, AI usage
+- [x] `demo_notes.txt` — portfolio walkthrough script
+- [ ] Demo video link in README
