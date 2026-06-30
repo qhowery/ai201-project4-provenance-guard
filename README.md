@@ -279,7 +279,7 @@ python test_milestone5.py
 
 ## Demo video
 
-See **`demo_notes.txt`** for a ~2-minute portfolio walkthrough script.
+See **`demo_notes.txt`** for a ~5-minute walkthrough. Run **`./demo.sh human`**, **`./demo.sh uncertain`**, etc. — no long curl pastes.
 
 - [ ] Demo video link (add URL here when recorded)
 
