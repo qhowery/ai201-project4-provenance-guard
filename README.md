@@ -281,7 +281,7 @@ python test_milestone5.py
 
 See **`demo_notes.txt`** for a ~5-minute walkthrough. Run **`./demo.sh human`**, **`./demo.sh uncertain`**, etc. — no long curl pastes.
 
-- [ ] Demo video link (add URL here when recorded)
+**[Demo video (~5 min)](https://drive.google.com/file/d/19yZq21dkd7b4gDpmbN7QdAMr7EH8FLTk/view?usp=share_link)**
 
 ## Project structure
 
@@ -312,4 +312,4 @@ logs/audit.jsonl        # Runtime audit trail (gitignored)
 - [x] Known limitations — specific failure case tied to signal property
 - [x] Spec reflection
 - [x] AI usage — 3 instances documented
-- [ ] Demo video recorded and linked
+- [x] Demo video recorded and linked
